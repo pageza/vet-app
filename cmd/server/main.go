@@ -17,7 +17,7 @@ func main() {
 
 	//Define Routes
 	r.HandleFunc("/register", authHandler.Register).Methods("POST")
-	r.HandleFunc("login", authHandler.Login).Methods("POST")
+	r.HandleFunc("/login", authHandler.Login).Methods("POST")
 	r.HandleFunc("/logout", authHandler.Logout).Methods("POST")
 	r.HandleFunc("/profile", authHandler.Profile).Methods("GET")
 
