@@ -33,10 +33,9 @@ func dummyResponse(w http.ResponseWriter, route string) {
 }
 
 // NewAuthHandler creates a new AuthHandler with the necessary dependencies
-func NewAuthHandler( /* pass dependencies here */ ) *AuthHandler {
+func NewAuthHandler(db *gorm.DB) *AuthHandler {
 	return &AuthHandler{
-		// Initialize fields with the passed dependencies
-
+		DB: db,
 	}
 }
 

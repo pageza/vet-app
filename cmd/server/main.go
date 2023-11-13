@@ -19,7 +19,7 @@ func main() {
 	userService := user.NewUserService(userRepo)
 
 	// Initialize the auth handler without passing userService.
-	authHandler := handler.NewAuthHandler()
+	authHandler := handler.NewAuthHandler(db)
 
 	// Setup the routes with the auth handler and userService.
 	mux := handler.SetupRoutes(authHandler, userService)
