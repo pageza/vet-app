@@ -53,6 +53,48 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 // Profile handles fetching the user profile
+
+// UpdateProfile handles updating the user profile
+func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	// Your update profile logic here
+	dummyResponse(w, "/profile/update")
+}
+
+// ChangePassword handles changing the user's password
+func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	// Your change password logic here
+	dummyResponse(w, "/profile/change-password")
+}
+
+// DeleteAccount handles deleting a user account
+func (h *AuthHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
+	// Your delete account logic here
+	dummyResponse(w, "/user/delete")
+}
+
+// UserList handles listing users (for admin or moderator)
+func (h *AuthHandler) UserList(w http.ResponseWriter, r *http.Request) {
+	// Your user list logic here
+	dummyResponse(w, "/users")
+}
+
+// ManageUserRole handles updating a user's role
+func (h *AuthHandler) ManageUserRole(w http.ResponseWriter, r *http.Request) {
+	// Your manage user role logic here
+	dummyResponse(w, "/user/{id}/role")
+}
+
+// PasswordResetRequest handles password reset requests
+func (h *AuthHandler) PasswordResetRequest(w http.ResponseWriter, r *http.Request) {
+	// Your password reset request logic here
+	dummyResponse(w, "/password-reset-request")
+}
+
+// PasswordReset handles resetting the user's password
+func (h *AuthHandler) PasswordReset(w http.ResponseWriter, r *http.Request) {
+	// Your password reset logic here
+	dummyResponse(w, "/password-reset")
+}
 func (h *AuthHandler) Profile(w http.ResponseWriter, r *http.Request) {
 	// Your profile fetching logic here
 	dummyResponse(w, "/profile")
