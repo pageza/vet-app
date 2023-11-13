@@ -52,8 +52,6 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	dummyResponse(w, "/logout")
 }
 
-// Profile handles fetching the user profile
-
 // UpdateProfile handles updating the user profile
 func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	// Your update profile logic here
@@ -95,6 +93,8 @@ func (h *AuthHandler) PasswordReset(w http.ResponseWriter, r *http.Request) {
 	// Your password reset logic here
 	dummyResponse(w, "/password-reset")
 }
+
+// Profile handles fetching the user profile
 func (h *AuthHandler) Profile(w http.ResponseWriter, r *http.Request) {
 	// Your profile fetching logic here
 	dummyResponse(w, "/profile")
