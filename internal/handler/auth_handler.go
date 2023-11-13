@@ -5,11 +5,17 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/pageza/vet-app/internal/user"
+	"gorm.io/gorm"
+
+	"golang.org/x/crypto/bcrypt"
 	// Import other necessary packages
 )
 
 // AuthHandler struct holds any dependencies for the auth handlers
 type AuthHandler struct {
+	DB *gorm.DB // Add the GORM DB instance here
 	// Add fields for dependencies, like a service layer or config
 }
 
@@ -42,8 +48,40 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // Register handles new user registration
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	// Your registration logic here
-	dummyResponse(w, "/register")
+	// Parse the request body to get user data
+	var newUser user.User
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Validate user data (e.g., check if email is valid, password is strong, etc.)
+	// ...
+
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "Error while hashing password", http.StatusInternalServerError)
+		return
+	}
+	newUser.Password = string(hashedPassword)
+
+	// Assuming db is your GORM database instance
+	// You need to pass it to the AuthHandler struct or get it from a global scope
+	result := h.DB.Create(&newUser)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+	// This involves interacting with your database layer
+	// ...
+
+	// Return a success response
+	w.WriteHeader(http.StatusCreated)
+	jsonResponse, _ := json.Marshal(map[string]string{"message": "User registered successfully"})
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResponse)
 }
 
 // Logout handles user logout
