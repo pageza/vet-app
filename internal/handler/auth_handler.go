@@ -1,10 +1,12 @@
-// internal/handler/auth_handler.go
+// Create a JWT token\n   token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{\n       "user_id": user.ID,\n       "email":   user.Email,\n       // You can add more claims here\n   })\n\n   // Sign and get the complete encoded token as a string\n   tokenString, err := token.SignedString([]byte("your_secret_key")) // Use a secret key\n   if err != nil {\n       http.Error(w, "Failed to generate token", http.StatusInternalServerError)\n       return\n   }.go
 
 package handler
 
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/pageza/vet-app/internal/user"
 	"gorm.io/gorm"
@@ -42,7 +44,49 @@ func NewAuthHandler(db *gorm.DB) *AuthHandler {
 // Login handles the user login
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	// Your login logic here
-	dummyResponse(w, "/login")
+	// Parse the request body to get user credentials
+	var credentials struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&credentials)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Validate credentials (this is a simplified example)
+	var user user.User
+	if err := h.DB.Where("email = ?", credentials.Email).First(&user).Error; err != nil {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	// Compare the provided password with the hashed password in the database
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	// Create a JWT token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+		"email":   user.Email,
+		// You can add more claims here
+	})
+
+	// Sign and get the complete encoded token as a string
+	tokenString, err := token.SignedString([]byte("your_secret_key")) // Use a secret key
+	if err != nil {
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	// Return the token in the response
+	jsonResponse, _ := json.Marshal(map[string]string{"token": tokenString})
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
 }
 
 // Register handles new user registration
