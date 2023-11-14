@@ -3,8 +3,14 @@
 package handler
 
 import (
+	"context"
+	"strings"
+
+	"github.com/go-redis/redis/v8"
+
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 
@@ -17,7 +23,8 @@ import (
 
 // AuthHandler struct holds any dependencies for the auth handlers
 type AuthHandler struct {
-	DB *gorm.DB // Add the GORM DB instance here
+	Redis *redis.Client
+	DB    *gorm.DB // Add the GORM DB instance here
 	// Add fields for dependencies, like a service layer or config
 }
 
@@ -127,10 +134,40 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-// Logout handles user logout
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	// Your logout logic here
-	dummyResponse(w, "/logout")
+	// Extract token from request
+	token := extractToken(r)
+
+	// Add token to Redis blacklist
+	ctx := context.Background()
+	err := h.Redis.Set(ctx, token, "blacklisted", 4*time.Hour).Err() // Set token expiry as needed
+	if err != nil {
+		http.Error(w, "Failed to blacklist token", http.StatusInternalServerError)
+		return
+	}
+
+	// Respond to the request indicating successful logout
+	w.WriteHeader(http.StatusOK)
+	jsonResponse, _ := json.Marshal(map[string]string{"message": "Logged out successfully"})
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResponse)
+}
+
+// Function to extract token from request
+func extractToken(r *http.Request) string {
+	authorizationHeader := r.Header.Get("Authorization")
+	if authorizationHeader == "" {
+		return "" // No token found
+	}
+
+	// Typically, the Authorization header will be in the format: "Bearer <token>"
+	// We need to split the header and get the token part
+	parts := strings.Split(authorizationHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return "" // Invalid token format
+	}
+
+	return parts[1] // Return the token
 }
 
 // UpdateProfile handles updating the user profile
