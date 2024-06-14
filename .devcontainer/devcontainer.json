@@ -1,0 +1,17 @@
+{
+    "name": "Go Dev Container",
+    "dockerFile": "Dockerfile",
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "golang.go",
+        "ms-azuretools.vscode-docker"
+    ],
+    "postCreateCommand": "go mod tidy",
+    "forwardPorts": [
+        8080
+    ],
+    "workspaceFolder": "/workspace",
+    "remoteUser": "root"
+}
