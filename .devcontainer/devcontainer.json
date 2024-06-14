@@ -1,6 +1,9 @@
 {
     "name": "Go Dev Container",
-    "dockerFile": "Dockerfile",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+    },
     "settings": {
         "terminal.integrated.shell.linux": "/bin/bash"
     },
@@ -13,5 +16,6 @@
         8080
     ],
     "workspaceFolder": "/workspace",
-    "remoteUser": "root"
+    "remoteUser": "vscode"
 }
+
