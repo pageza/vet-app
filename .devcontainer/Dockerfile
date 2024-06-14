@@ -6,9 +6,4 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends postgresql-client redis
 
 
-# Install additional dependencies if needed
-RUN apk add --no-cache \
-    postgresql-client \
-    redis
-
 WORKDIR /workspace
