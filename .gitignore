@@ -1,0 +1,60 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of the Go coverage tool
+*.coverprofile
+
+# Editing backup files
+*~
+*.swp
+
+# Dependency directories
+vendor/
+node_modules/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# IDE/Editor directories and files
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Devcontainer
+.devcontainer/
+
+# Environment variables
+.env
+.env.*
+
+# Database
+*.db
+*.sqlite
+
+# Miscellaneous
+.DS_Store
+
+# Ignore test binaries
+*.test
+
+# Ignore coverage tool files
+*.cov
+
+# Ignore build artifacts
+bin/
+dist/O
+
