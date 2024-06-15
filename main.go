@@ -5,8 +5,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"vet-app/src/db"
-	"vet-app/src/handlers"
+
+	"github.com/pageza/vet-app/src/db"
+	"github.com/pageza/vet-app/src/handlers"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -32,11 +33,11 @@ func main() {
 	}
 
 	// Test Redis connection
-	_, err = db.RDB.Ping(db.Ctx).Result()
+	result, err := db.RedisClient.Ping(db.RedisCtx).Result()
 	if err != nil {
-		log.Fatalf("Redis connection failed: %v", err)
+		log.Fatalf("Could not connect to Redis: %v", err)
 	} else {
-		fmt.Println("Redis connected successfully")
+		log.Printf("Redis connection successful: %v", result)
 	}
 
 	// Set up the router

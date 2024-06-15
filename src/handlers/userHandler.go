@@ -4,7 +4,8 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"vet-app/src/models"
+
+	"github.com/pageza/vet-app/src/models"
 )
 
 var users []models.User

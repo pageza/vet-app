@@ -1,4 +1,3 @@
-// src/db/redis.go
 package db
 
 import (
@@ -8,15 +7,21 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var RDB *redis.Client
-var ctx = context.Background()
+var (
+	RedisClient *redis.Client
+	RedisCtx    context.Context
+)
 
 func InitRedis() {
-	RDB = redis.NewClient(&redis.Options{
-		Addr: os.Getenv("REDIS_ADDR"),
+	RedisCtx = context.Background()
+
+	RedisClient = redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_ADDR"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
 	})
 
-	_, err := RDB.Ping(ctx).Result()
+	_, err := RedisClient.Ping(RedisCtx).Result()
 	if err != nil {
 		panic(err)
 	}
