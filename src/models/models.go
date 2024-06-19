@@ -1,8 +1,12 @@
 // src/models/user.go
 package models
 
+import (
+	"gorm.io/gorm"
+)
+
 type User struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	gorm.Model 
+	Name  string `gorm:"type:varchar(100);not null"`
+	Email string `gorm:"type:varchar(100);uniqueIndex;not null"`
 }
