@@ -49,6 +49,7 @@ func main() {
 
 	// Start the server
 	port := os.Getenv("PORT")
+	log.Println(port)
 	fmt.Printf("Server running on port %s\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), r))
 }
