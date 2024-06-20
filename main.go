@@ -50,9 +50,24 @@ func main() {
 	// Define routes
 	r.HandleFunc("/users", handlers.GetUsers).Methods("GET")
 	r.HandleFunc("/users/{id:[0-9]+}", handlers.GetUser).Methods("GET")
+	r.HandleFunc("/users/{user_id}/responses", handlers.GetResponsesForUser).Methods("GET")
 	r.HandleFunc("/users", handlers.CreateUser).Methods("POST")
 	r.HandleFunc("/users/{id:[0-9]+}", handlers.UpdateUser).Methods("PUT")
 	r.HandleFunc("/users/{id:[0-9]+}", handlers.DeleteUser).Methods("DELETE")
+
+	// Define routes for calls
+	r.HandleFunc("/calls", handlers.CreateCall).Methods("POST")
+	r.HandleFunc("/calls", handlers.GetCalls).Methods("GET")
+	r.HandleFunc("/calls/{id}", handlers.GetCall).Methods("GET")
+	r.HandleFunc("/calls/{id}", handlers.UpdateCall).Methods("PUT")
+	r.HandleFunc("/calls/{id}", handlers.DeleteCall).Methods("DELETE")
+
+	// Define routes for responses
+	r.HandleFunc("/calls/{call_id}/responses", handlers.CreateResponse).Methods("POST")
+	r.HandleFunc("/calls/{call_id}/responses", handlers.GetResponses).Methods("GET")
+	r.HandleFunc("/responses/{id}", handlers.GetResponse).Methods("GET")
+	r.HandleFunc("/responses/{id}", handlers.UpdateResponse).Methods("PUT")
+	r.HandleFunc("/responses/{id}", handlers.DeleteResponse).Methods("DELETE")
 
 	// Start the server
 	port := os.Getenv("PORT")
