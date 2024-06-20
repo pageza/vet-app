@@ -3,10 +3,11 @@ package handlers
 import (
     "encoding/json"
     "net/http"
-    "github.com/pageza/vet-app/src/models"
-    "github.com/pageza/vet-app/src/db"
-    "github.com/gorilla/mux"
     "strconv"
+
+    "github.com/gorilla/mux"
+    "github.com/pageza/vet-app/src/db"
+    "github.com/pageza/vet-app/src/models"
     "gorm.io/gorm"
 )
 
@@ -35,7 +36,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
     var user models.User
     result := db.DB.First(&user, id)
     if result.Error != nil {
-        if gorm.IsRecordNotFoundError(result.Error) {
+        if result.Error == gorm.ErrRecordNotFound {
             http.Error(w, "User not found", http.StatusNotFound)
         } else {
             http.Error(w, result.Error.Error(), http.StatusInternalServerError)
@@ -76,7 +77,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
     var user models.User
     if err := db.DB.First(&user, id).Error; err != nil {
-        if gorm.IsRecordNotFoundError(err) {
+        if err == gorm.ErrRecordNotFound {
             http.Error(w, "User not found", http.StatusNotFound)
         } else {
             http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -89,10 +90,14 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    db.DB.Model(&user).Updates(user)
+    db.DB.Model(&user).Where("id = ?", id).Updates(user)
+
+    if err := db.DB.First(&user, id).Error; err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
     w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
     json.NewEncoder(w).Encode(user)
 }
 
@@ -107,7 +112,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
     var user models.User
     if err := db.DB.First(&user, id).Error; err != nil {
-        if gorm.IsRecordNotFoundError(err) {
+        if err == gorm.ErrRecordNotFound {
             http.Error(w, "User not found", http.StatusNotFound)
         } else {
             http.Error(w, err.Error(), http.StatusInternalServerError)
