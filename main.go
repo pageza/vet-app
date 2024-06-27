@@ -6,11 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/pageza/vet-app/src/db"
-	"github.com/pageza/vet-app/src/handlers"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 )
 
 func main() {
