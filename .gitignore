@@ -30,8 +30,8 @@ go.work.sum
 *.log
 
 # Docker
-Dockerfile
-docker-compose.yml
+# Dockerfile
+# docker-compose.yml
 .dockerignore
 
 # Devcontainer
@@ -39,7 +39,7 @@ docker-compose.yml
 
 # Environment variables
 .env
-.env.*
+
 
 # Database
 *.db

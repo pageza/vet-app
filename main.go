@@ -20,15 +20,21 @@ func main() {
         log.Fatalf("could not load config: %v", err)
     }
 
-    log.Printf("Database host: %s", config.DBHost)
-    log.Printf("Database port: %d", config.DBPort)
-    log.Printf("Database user: %s", config.DBUser)
-    log.Printf("Database password: %s", config.DBPassword)
-    log.Printf("Database name: %s", config.DBName)
+    log.Printf("Database host: %s", config.DB.Host)
+    log.Printf("Database port: %d", config.DB.Port)
+    log.Printf("Database user: %s", config.DB.User)
+    log.Printf("Database password: %s", config.DB.Password)
+    log.Printf("Database name: %s", config.DB.Name)
+
+    log.Printf("Test Database host: %s", config.TestDB.Host)
+    log.Printf("Test Database port: %d", config.TestDB.Port)
+    log.Printf("Test Database user: %s", config.TestDB.User)
+    log.Printf("Test Database password: %s", config.TestDB.Password)
+    log.Printf("Test Database name: %s", config.TestDB.Name)
 
     // Initialize PostgreSQL
     log.Println("Initializing PostgreSQL...")
-    db.InitDB(config)
+    db.InitDB(config.DB)
 
     // Test PostgreSQL connection
     sqlDB, err := db.DB.DB()
@@ -58,7 +64,7 @@ func main() {
     log.Println("Setting up the router...")
     r := mux.NewRouter()
 
-    // // Define routes
+    // Define routes
     // r.HandleFunc("/users", handlers.GetUsers).Methods("GET")
     // r.HandleFunc("/users/{id:[0-9]+}", handlers.GetUser).Methods("GET")
     // r.HandleFunc("/users/{user_id}/responses", handlers.GetResponsesForUser).Methods("GET")
@@ -66,14 +72,14 @@ func main() {
     // r.HandleFunc("/users/{id:[0-9]+}", handlers.UpdateUser).Methods("PUT")
     // r.HandleFunc("/users/{id:[0-9]+}", handlers.DeleteUser).Methods("DELETE")
 
-    // // Define routes for calls
+    // Define routes for calls
     // r.HandleFunc("/calls", handlers.CreateCall).Methods("POST")
     // r.HandleFunc("/calls", handlers.GetCalls).Methods("GET")
     // r.HandleFunc("/calls/{id}", handlers.GetCall).Methods("GET")
     // r.HandleFunc("/calls/{id}", handlers.UpdateCall).Methods("PUT")
     // r.HandleFunc("/calls/{id}", handlers.DeleteCall).Methods("DELETE")
 
-    // // Define routes for responses
+    // Define routes for responses
     // r.HandleFunc("/calls/{call_id}/responses", handlers.CreateResponse).Methods("POST")
     // r.HandleFunc("/calls/{call_id}/responses", handlers.GetResponses).Methods("GET")
     // r.HandleFunc("/responses/{id}", handlers.GetResponse).Methods("GET")
