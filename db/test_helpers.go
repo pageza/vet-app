@@ -4,22 +4,22 @@ import (
 	"log"
 	"testing"
 
-	"gorm.io/gorm"
-	"github.com/stretchr/testify/assert"
 	"github.com/pageza/vet-app/config"
+	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 // ClearDB is a helper function to clear all tables in the database.
 func ClearDB(db *gorm.DB) {
-	tables := []string{"users"}
+	tables := []string{"responses", "calls", "users"} // Clear in reverse order of dependencies
 	for _, table := range tables {
-		if err := db.Exec("DELETE FROM " + table).Error; err != nil {
-			log.Fatalf("Failed to clear table %s: %v", table, err)
+		if err := db.Exec("TRUNCATE TABLE " + table + " CASCADE").Error; err != nil {
+			log.Printf("Failed to clear table %s: %v", table, err)
 		}
 	}
 }
 
-// SetupDB is a helper function to initialize the database and run migrations.
+// SetupDB is a helper function to initialize the database, run migrations, and clear the tables.
 func SetupDB(t *testing.T, models ...interface{}) {
 	config, err := config.LoadConfig("../")
 	if err != nil {
@@ -29,10 +29,10 @@ func SetupDB(t *testing.T, models ...interface{}) {
 	err = InitDB(config.DB)
 	assert.NoError(t, err)
 
-	// Clear the database before each test
-	ClearDB(DB)
-
 	// Run migrations
 	err = DB.AutoMigrate(models...)
 	assert.NoError(t, err)
+
+	// Clear the database before each test
+	ClearDB(DB)
 }

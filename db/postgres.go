@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/pageza/vet-app/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"github.com/pageza/vet-app/config"
 )
 
 var DB *gorm.DB
@@ -20,7 +20,7 @@ func InitDB(dbConfig config.DBConfig) error {
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return fmt.Errorf("Failed to connect to the database: %v", err)
+		return fmt.Errorf("failed to connect to the database: %v", err)
 	}
 	log.Println("Database connected successfully")
 	return nil

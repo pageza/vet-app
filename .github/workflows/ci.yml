@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - working
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:13
+        env:
+          POSTGRES_DB: vetpeersupport
+          POSTGRES_USER: zach
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd="pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:6
+        env:
+          REDIS_PASSWORD: redispassword
+        options: >-
+          --health-cmd="redis-cli -a redispassword ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.22.4
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test ./...
+
+    - name: Build the application
+      run: go build -o main .

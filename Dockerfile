@@ -16,6 +16,9 @@ RUN go mod tidy
 # Copy the source code into the container
 COPY . .
 
+# Run tests
+RUN go test ./...
+
 # Build the Go application
 RUN go build -o main .
 

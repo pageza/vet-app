@@ -1,38 +1,22 @@
 package db
 
 import (
+	"fmt"
+	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/pageza/vet-app/config"
+	"github.com/pageza/vet-app/models"
+	"github.com/stretchr/testify/assert"
 )
 
-type User struct {
-	ID    uint   `gorm:"primaryKey"`
-	Name  string `gorm:"size:255"`
-	Email string `gorm:"size:255;unique"`
-}
-
 func setup(t *testing.T) {
-	config, err := config.LoadConfig("../")
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
-	}
-
-	err = InitDB(config.DB)
-	assert.NoError(t, err)
-
-	// Clear the database before each test
-	ClearDB(DB)
-
-	// Run migrations
-	err = DB.AutoMigrate(&User{})
-	assert.NoError(t, err)
+	SetupDB(t, &models.User{})
 }
 
 func TestInitDB(t *testing.T) {
 	setup(t)
-	
+	// Additional assertions or checks can be added here if needed
 }
 
 func TestInitDBConnectionFailure(t *testing.T) {
@@ -49,45 +33,21 @@ func TestInitDBConnectionFailure(t *testing.T) {
 }
 
 func TestDatabaseMigrations(t *testing.T) {
-	config, err := config.LoadConfig("../")
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
-	}
-
-	err = InitDB(config.DB)
-	assert.NoError(t, err)
-
-	// Example migration test
-	type User struct {
-		ID    uint   `gorm:"primaryKey"`
-		Name  string `gorm:"size:255"`
-		Email string `gorm:"size:255;unique"`
-	}
-
-	err = DB.AutoMigrate(&User{})
-	assert.NoError(t, err)
+	setup(t)
+	// No specific assertions needed here as setup runs AutoMigrate
 }
 
 func TestDataInsertionAndRetrieval(t *testing.T) {
-	config, err := config.LoadConfig("../")
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
-	}
-
-	err = InitDB(config.DB)
-	assert.NoError(t, err)
-
-	err = DB.AutoMigrate(&User{})
-	assert.NoError(t, err)
+	setup(t)
 
 	// Insert a user
-	user := User{Name: "John Doe", Email: "john@example.com"}
+	user := models.User{Name: "John Doe", Email: "john@example.com"}
 	result := DB.Create(&user)
 	assert.NoError(t, result.Error)
 	assert.NotZero(t, user.ID)
 
 	// Retrieve the user
-	var retrievedUser User
+	var retrievedUser models.User
 	result = DB.First(&retrievedUser, user.ID)
 	assert.NoError(t, result.Error)
 	assert.Equal(t, user.Name, retrievedUser.Name)
@@ -95,25 +55,10 @@ func TestDataInsertionAndRetrieval(t *testing.T) {
 }
 
 func TestDataUpdateAndDelete(t *testing.T) {
-	config, err := config.LoadConfig("../")
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
-	}
-
-	err = InitDB(config.DB)
-	assert.NoError(t, err)
-
-	type User struct {
-		ID    uint   `gorm:"primaryKey"`
-		Name  string `gorm:"size:255"`
-		Email string `gorm:"size:255;unique"`
-	}
-
-	err = DB.AutoMigrate(&User{})
-	assert.NoError(t, err)
+	setup(t)
 
 	// Insert a user
-	user := User{Name: "John Doe", Email: "john@example.com"}
+	user := models.User{Name: "John Doe", Email: "john@example.com"}
 	result := DB.Create(&user)
 	assert.NoError(t, result.Error)
 	assert.NotZero(t, user.ID)
@@ -124,7 +69,7 @@ func TestDataUpdateAndDelete(t *testing.T) {
 	assert.NoError(t, result.Error)
 
 	// Retrieve the updated user
-	var updatedUser User
+	var updatedUser models.User
 	result = DB.First(&updatedUser, user.ID)
 	assert.NoError(t, result.Error)
 	assert.Equal(t, "Jane Doe", updatedUser.Name)
@@ -134,35 +79,20 @@ func TestDataUpdateAndDelete(t *testing.T) {
 	assert.NoError(t, result.Error)
 
 	// Ensure the user is deleted
-	var deletedUser User
+	var deletedUser models.User
 	result = DB.First(&deletedUser, user.ID)
 	assert.Error(t, result.Error)
 	assert.Empty(t, deletedUser)
 }
 
 func TestDatabaseTransactions(t *testing.T) {
-	config, err := config.LoadConfig("../")
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
-	}
-
-	err = InitDB(config.DB)
-	assert.NoError(t, err)
-
-	type User struct {
-		ID    uint   `gorm:"primaryKey"`
-		Name  string `gorm:"size:255"`
-		Email string `gorm:"size:255;unique"`
-	}
-
-	err = DB.AutoMigrate(&User{})
-	assert.NoError(t, err)
+	setup(t)
 
 	tx := DB.Begin()
 	assert.NoError(t, tx.Error)
 
 	// Insert a user within the transaction
-	user := User{Name: "John Doe", Email: "john@example.com"}
+	user := models.User{Name: "John Doe", Email: "john@example.com"}
 	result := tx.Create(&user)
 	assert.NoError(t, result.Error)
 	assert.NotZero(t, user.ID)
@@ -171,7 +101,7 @@ func TestDatabaseTransactions(t *testing.T) {
 	tx.Rollback()
 
 	// Ensure the user was not committed to the database
-	var rolledBackUser User
+	var rolledBackUser models.User
 	result = DB.First(&rolledBackUser, user.ID)
 	assert.Error(t, result.Error)
 	assert.Empty(t, rolledBackUser)
@@ -180,7 +110,7 @@ func TestDatabaseTransactions(t *testing.T) {
 	tx = DB.Begin()
 	assert.NoError(t, tx.Error)
 
-	user = User{Name: "Jane Doe", Email: "jane@example.com"}
+	user = models.User{Name: "Jane Doe", Email: "jane@example.com"}
 	result = tx.Create(&user)
 	assert.NoError(t, result.Error)
 	assert.NotZero(t, user.ID)
@@ -188,38 +118,59 @@ func TestDatabaseTransactions(t *testing.T) {
 	tx.Commit()
 
 	// Ensure the user was committed to the database
-	var committedUser User
+	var committedUser models.User
 	result = DB.First(&committedUser, user.ID)
 	assert.NoError(t, result.Error)
 	assert.Equal(t, "Jane Doe", committedUser.Name)
 }
 
 func TestDatabaseConstraints(t *testing.T) {
-	config, err := config.LoadConfig("../")
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
-	}
-
-	err = InitDB(config.DB)
-	assert.NoError(t, err)
-
-	type User struct {
-		ID    uint   `gorm:"primaryKey"`
-		Name  string `gorm:"size:255"`
-		Email string `gorm:"size:255;unique"`
-	}
-
-	err = DB.AutoMigrate(&User{})
-	assert.NoError(t, err)
+	setup(t)
 
 	// Insert a user
-	user := User{Name: "John Doe", Email: "john@example.com"}
+	user := models.User{Name: "John Doe", Email: "john@example.com"}
 	result := DB.Create(&user)
 	assert.NoError(t, result.Error)
 	assert.NotZero(t, user.ID)
 
 	// Attempt to insert a user with a duplicate email
-	duplicateUser := User{Name: "Jane Doe", Email: "john@example.com"}
+	duplicateUser := models.User{Name: "Jane Doe", Email: "john@example.com"}
 	result = DB.Create(&duplicateUser)
 	assert.Error(t, result.Error)
+}
+
+func TestConcurrentPostgresAccess(t *testing.T) {
+	setup(t)
+
+	user := models.User{Name: "John Doe", Email: "john@example.com"}
+	result := DB.Create(&user)
+	assert.NoError(t, result.Error)
+	assert.NotZero(t, user.ID)
+
+	var wg sync.WaitGroup
+	const numGoroutines = 10
+
+	for i := 0; i < numGoroutines; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			for j := 0; j < 10; j++ {
+				// Simulate read operation
+				var retrievedUser models.User
+				DB.First(&retrievedUser, user.ID)
+				assert.Equal(t, user.Email, retrievedUser.Email)
+
+				// Simulate write operation
+				retrievedUser.Name = fmt.Sprintf("John Doe %d-%d", i, j)
+				DB.Save(&retrievedUser)
+			}
+		}(i)
+	}
+
+	wg.Wait()
+
+	// Verify final state
+	var finalUser models.User
+	DB.First(&finalUser, user.ID)
+	assert.Contains(t, finalUser.Name, "John Doe")
 }
