@@ -29,10 +29,14 @@ go.work.sum
 # Logs
 *.log
 
-# Docker
-# Dockerfile
-# docker-compose.yml
+# Docker-related files
+docker-compose.override.yml
+docker-compose.test.yml
 .dockerignore
+
+# Ignore redis testing config file
+redis.conf
+redis_test.conf
 
 # Devcontainer
 .devcontainer/

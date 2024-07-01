@@ -1,0 +1,23 @@
+# Redis configuration file
+
+# Bind to all interfaces
+bind 0.0.0.0
+
+# Port number
+port 6379
+
+# Require a password to access Redis
+requirepass ${REDIS_PASSWORD}
+
+# Other configurations (optional)
+# maxmemory 256mb
+# maxmemory-policy allkeys-lru
+# ...
+
+# Save settings (snapshotting)
+save 900 1
+save 300 10
+save 60 10000
+
+# Logging
+logfile /var/log/redis/redis-server.log

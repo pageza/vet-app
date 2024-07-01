@@ -3,66 +3,64 @@ name: CI
 on:
   push:
     branches:
-      - working
       - main
   pull_request:
     branches:
       - main
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     services:
-      db:
-        image: postgres:13
-        env:
-          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
-          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-        options: >-
-          --health-cmd="pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
+      docker:
+        image: docker:latest
+        options: --privileged
         ports:
           - 5432:5432
-      redis:
-        image: redis:6
-        env:
-          REDIS_PASSWORD: ${{ secrets.TEST_REDIS_PASSWORD }}
-        options: >-
-          --health-cmd="redis-cli -a $${REDIS_PASSWORD} ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-        ports:
           - 6379:6379
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.22.4
+    - name: Set up Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install docker-compose-plugin -y
 
-    - name: Install dependencies
-      run: go mod download
-
-    - name: Run tests
+    - name: Set up environment variables from secrets
       env:
-        DB_HOST: ${{ secrets.TEST_DB_HOST }}
-        DB_PORT: ${{ secrets.TEST_DB_PORT }}
-        DB_USER: ${{ secrets.TEST_DB_USER }}
-        DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-        DB_NAME: ${{ secrets.TEST_DB_NAME }}
-        REDIS_HOST: ${{ secrets.TEST_REDIS_HOST }}
-        REDIS_PORT: ${{ secrets.TEST_REDIS_PORT }}
-        REDIS_PASSWORD: ${{ secrets.TEST_REDIS_PASSWORD }}
-        REDIS_DB: ${{ secrets.TEST_REDIS_DB }}
-      run: go test ./...
+        TEST_DB_HOST: ${{ secrets.TEST_DB_HOST }}
+        TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+        TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+        TEST_DB_PORT: ${{ secrets.TEST_DB_PORT }}
+        TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+        TEST_REDIS_DB: ${{ secrets.TEST_REDIS_DB }}
+        TEST_REDIS_HOST: ${{ secrets.TEST_REDIS_HOST }}
+        TEST_REDIS_PASSWORD: ${{ secrets.TEST_REDIS_PASSWORD }}
+        TEST_REDIS_PORT: ${{ secrets.TEST_REDIS_PORT }}
+      run: |
+        echo "TEST_DB_HOST=${TEST_DB_HOST}" >> .env
+        echo "TEST_DB_NAME=${TEST_DB_NAME}" >> .env
+        echo "TEST_DB_PASSWORD=${TEST_DB_PASSWORD}" >> .env
+        echo "TEST_DB_PORT=${TEST_DB_PORT}" >> .env
+        echo "TEST_DB_USER=${TEST_DB_USER}" >> .env
+        echo "TEST_REDIS_DB=${TEST_REDIS_DB}" >> .env
+        echo "TEST_REDIS_HOST=${TEST_REDIS_HOST}" >> .env
+        echo "TEST_REDIS_PASSWORD=${TEST_REDIS_PASSWORD}" >> .env
+        echo "TEST_REDIS_PORT=${TEST_REDIS_PORT}" >> .env
 
-    - name: Build the application
-      run: go build -o main .
+    - name: Configure Redis
+      run: |
+        cp redis.conf.template redis.conf
+        sed -i "s/\${REDIS_PASSWORD}/${{ secrets.REDIS_PASSWORD }}/" redis.conf
+
+    - name: Build and run tests
+      run: |
+        docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
+
+    - name: Deploy Redis
+      if: github.ref == 'refs/heads/main'
+      run: |
+        # Add your deployment steps here, e.g., uploading redis.conf to the server or container
