@@ -17,11 +17,11 @@ jobs:
       db:
         image: postgres:13
         env:
-          POSTGRES_DB: vetpeersupport
-          POSTGRES_USER: zach
-          POSTGRES_PASSWORD: password
+          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
         options: >-
-          --health-cmd="pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+          --health-cmd="pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -30,9 +30,9 @@ jobs:
       redis:
         image: redis:6
         env:
-          REDIS_PASSWORD: redispassword
+          REDIS_PASSWORD: ${{ secrets.TEST_REDIS_PASSWORD }}
         options: >-
-          --health-cmd="redis-cli -a redispassword ping"
+          --health-cmd="redis-cli -a $${REDIS_PASSWORD} ping"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -52,6 +52,16 @@ jobs:
       run: go mod download
 
     - name: Run tests
+      env:
+        DB_HOST: ${{ secrets.TEST_DB_HOST }}
+        DB_PORT: ${{ secrets.TEST_DB_PORT }}
+        DB_USER: ${{ secrets.TEST_DB_USER }}
+        DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+        DB_NAME: ${{ secrets.TEST_DB_NAME }}
+        REDIS_HOST: ${{ secrets.TEST_REDIS_HOST }}
+        REDIS_PORT: ${{ secrets.TEST_REDIS_PORT }}
+        REDIS_PASSWORD: ${{ secrets.TEST_REDIS_PASSWORD }}
+        REDIS_DB: ${{ secrets.TEST_REDIS_DB }}
       run: go test ./...
 
     - name: Build the application
